@@ -1,0 +1,38 @@
+diff -Naru '--exclude=.git' ../basicmac.orig/src/hal/target-config.h ./src/hal/target-config.h
+--- ../basicmac.orig/src/hal/target-config.h	2021-08-25 21:53:33.429169893 +1000
++++ ./src/hal/target-config.h	2021-08-25 21:54:52.912157381 +1000
+@@ -34,12 +34,12 @@
+ // then select the right region at runtime using os_getRegion() and/or
+ // LMIC_reset_ex().
+ #if !defined(CFG_eu868) && !defined(CFG_us915)
+-#define CFG_eu868 1
++//#define CFG_eu868 1
+ //#define CFG_us915 1
+ //#define CFG_as923 1
+ //#define CFG_il915 1
+ //#define CFG_kr920 1
+-//#define CFG_au915 1
++#define CFG_au915 1
+ #endif // !defined(CFG_eu868) && !defined(CFG_us915)
+ 
+ #define CFG_autojoin
+diff -Naru '--exclude=.git' ../basicmac.orig/examples/basicmac-abp/basicmac-abp.ino ./examples/basicmac-abp/basicmac-abp.ino
+--- ../basicmac.orig/examples/basicmac-abp/basicmac-abp.ino	2021-08-25 21:53:33.429169893 +1000
++++ ./examples/basicmac-abp/basicmac-abp.ino	2021-08-25 21:54:52.912157381 +1000
+@@ -229,6 +203,16 @@
+     LMIC_setSession (0x1, DEVADDR, NWKSKEY, APPSKEY);
+     #endif
+ 
++    // First, disable channels 0-7
++    for (int channel=0; channel<8; ++channel) {
++      LMIC_disableChannel(channel);
++    }
++    // Now, disable channels 16-72 (is there 72 ??)
++    for (int channel=16; channel<72; ++channel) {
++       LMIC_disableChannel(channel);
++    }
++    // This means only channels 8-15 are up
++
+     #if defined(CFG_eu868)
+     // These are defined by the LoRaWAN specification
+     enum {

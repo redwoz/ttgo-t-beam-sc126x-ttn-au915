@@ -63,17 +63,56 @@ u1_t os_getRegion (void) { return LMIC_regionCode(0); }
 // cycle limitations).
 const unsigned TX_INTERVAL = 60000;
 
+// When this is defined, a standard pinmap from standard-pinmaps.ino
+// will be used.  If you need to use a custom pinmap, comment this line
+// and enter the pin numbers in the lmic_pins variable below.
+// #define USE_STANDARD_PINMAP
+
+#if !defined(USE_STANDARD_PINMAP)
+// All pin assignments use Arduino pin numbers (e.g. what you would pass
+// to digitalWrite), or LMIC_UNUSED_PIN when a pin is not connected.
 const lmic_pinmap lmic_pins = {
+    // NSS input pin for SPI communication (required)
     .nss = LORA_CS, // 18
-    // TXEN is controlled through DIO2 by the SX1262 (HPD16A) directly
+    // If needed, these pins control the RX/TX antenna switch (active
+    // high outputs). When you have both, the antenna switch can
+    // powerdown when unused. If you just have a RXTX pin it should
+    // usually be assigned to .tx, reverting to RX mode when idle).
+    //
+    // The SX127x has an RXTX pin that can automatically control the
+    // antenna switch (if internally connected on the transceiver
+    // board). This pin is always active, so no configuration is needed
+    // for that here.
+    // On SX126x, the DIO2 can be used for the same thing, but this is
+    // disabled by default. To enable this, set .tx to
+    // LMIC_CONTROLLED_BY_DIO2 below (this seems to be common and
+    // enabling it when not needed is probably harmless, unless DIO2 is
+    // connected to GND or VCC directly inside the transceiver board).
     .tx = LMIC_CONTROLLED_BY_DIO2,
     .rx = LMIC_UNUSED_PIN,
+    // Radio reset output pin (active high for SX1276, active low for
+    // others). When omitted, reset is skipped which might cause problems.
     .rst = LORA_RST, // 23
+    // DIO input pins.
+    //   For SX127x, LoRa needs DIO0 and DIO1, FSK needs DIO0, DIO1 and DIO2
+    //   For SX126x, Only DIO1 is needed (so leave DIO0 and DIO2 as LMIC_UNUSED_PIN)
     .dio = {LMIC_UNUSED_PIN, LORA_IO1  /* 33 */, LMIC_UNUSED_PIN},
+    // Busy input pin (SX126x only). When omitted, a delay is used which might
+    // cause problems.
     .busy = LORA_IO2, // 32
-    // TCXO is controlled through DIO3 by the SX1262 directly
+    // TCXO oscillator enable output pin (active high).
+    //
+    // For SX127x this should be an I/O pin that controls the TCXO, or
+    // LMIC_UNUSED_PIN when a crystal is used instead of a TCXO.
+    //
+    // For SX126x this should be LMIC_CONTROLLED_BY_DIO3 when a TCXO is
+    // directly connected to the transceiver DIO3 to let the transceiver
+    // start and stop the TCXO, or LMIC_UNUSED_PIN when a crystal is
+    // used instead of a TCXO. Controlling the TCXO from the MCU is not
+    // supported.
     .tcxo = LMIC_CONTROLLED_BY_DIO3,
 };
+#endif // !defined(USE_STANDARD_PINMAP)
 
 void onLmicEvent (ev_t ev) {
     Serial.print(os_getTime());
