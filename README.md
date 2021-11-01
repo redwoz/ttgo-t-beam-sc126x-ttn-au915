@@ -9,6 +9,7 @@
 ##  Overcomes challenges:
 * Most LMIC libraries dont support SX1262/SX126x
 * Little evidence of working tests on AU915
+* Switched to using ESP32 SPI bus HSPI, rather than the default VSPI (however uses the same pins)
 
 ## Thanks to the following for providing the hints for this to work:
 * https://github.com/LacunaSpace/basicmac which supports the SX1262/SX126x and provides easy Arduino compatibility
